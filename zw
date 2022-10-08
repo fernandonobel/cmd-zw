@@ -195,7 +195,7 @@ Released under Apache-2.0 License
 Please mention rwxrob.tv'
 
 
-HELP[_new_uuid]='Generate a new uuid using the UTC (Coordinated Universal Time).'
+HELP[_new_uuid]='Generate a new uuid using the UTC+0 (Coordinated Universal Time).'
 
 x._new_uuid () {
   date -u +%y%m%d-%H%M%S;
