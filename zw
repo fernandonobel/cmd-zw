@@ -9,6 +9,7 @@ set -e
 : "${EDITOR:=vi}"
 : "${HELP_BROWSER:=}"
 : "${EXE:="${0##*/}"}"
+: "${ZET_DIR:="$HOME/Sync/zettelkasten"}"
 
 declare -A HELP
 declare -A CONF
@@ -194,6 +195,11 @@ Copyright 2021 Rob Muhlestein <rob@rwx.gg>
 Released under Apache-2.0 License  
 Please mention rwxrob.tv'
 
+HELP[index]='Open the index of the Zettelkasten.'
+
+x.index () {
+  $EDITOR $ZET_DIR/index.md
+}
 
 HELP[_new_uuid]='Generate a new uuid using the UTC+0 (Coordinated Universal Time).'
 
