@@ -221,7 +221,9 @@ x._last () {
 HELP[title]='Return title of a given Zettel.'
 
 x.title() {
+  # Save as a local variable the uuid of the zettel.
   local uuid=$1
+  # Find the title and return it.
   grep -oPh -m 1 '# \K(.*)' "${ZET_DIR}/$uuid.md"
 }
 
@@ -237,6 +239,32 @@ x.tags() {
   # Remove # and ## from the tags.
   echo "${tag_raw//#/}"
 }
+
+
+HELP[tags_table]='Print a table with tags info.'
+
+x.tags_table () {
+  echo "Tags table";
+
+  declare -A tags_array;
+
+  local uuid;
+
+  local zettels=$(ls "${ZET_DIR}" | grep '^[0-9]');
+
+  for zettel in $zettels; do
+    uuid=${zettel%.md};
+
+    for tag in $(x.tags $uuid); do
+      tags_array[$tag]=$((tags_array[$tag]+1))
+    done
+  done
+
+  for key in "${!tags_array[@]}"; do 
+    echo "$key : ${tags_array[$key]}"; 
+  done
+}
+
 
 HELP[foo]='Foos things.'
 
