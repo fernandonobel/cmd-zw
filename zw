@@ -33,6 +33,7 @@ _alternatives() {
   if [[ $CMD = f ]];then
     x.foo "$@"
   fi
+  # Show help if no command is passed.
   if [[ -z $CMD ]];then
     x.help "$@"
   fi
@@ -201,13 +202,40 @@ Please mention rwxrob.tv'
 HELP[index]='Open the index of the Zettelkasten.'
 
 x.index () {
-  $EDITOR $ZET_DIR/index.md
+  $EDITOR "${ZET_DIR}/index.md";
 }
 
 HELP[_new_uuid]='Generate a new uuid using the UTC+0 (Coordinated Universal Time).'
 
 x._new_uuid () {
   date -u +%y%m%d-%H%M%S;
+}
+
+HELP[_last]='Return uuid of last added Zettel.'
+
+x._last () {
+  # TODO:
+  echo "TODO"
+}
+
+HELP[title]='Return title of a given Zettel.'
+
+x.title() {
+  local uuid=$1
+  grep -oPh -m 1 '# \K(.*)' "${ZET_DIR}/$uuid.md"
+}
+
+HELP[tags]='Return tags of a given Zettel.'
+
+x.tags() {
+  # Save as a local variable the uuid of the zettel.
+  local uuid=$1;
+  # Declare a local varibale to save the raw tags from the zettel.
+  local tag_raw;
+  # Find the tags in the zettel and save them.
+  tag_raw=$(grep -oPh -m 1 'tags: \K(.*)' "${ZET_DIR}/$uuid.md");
+  # Remove # and ## from the tags.
+  echo "${tag_raw//#/}"
 }
 
 HELP[foo]='Foos things.'
