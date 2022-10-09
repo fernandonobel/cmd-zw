@@ -207,9 +207,24 @@ x.init () {
     echo "ERROR: The zettelkasten is already init.";
   else
     touch ".zettelwarrior";
+    cat "$TEMPLATE_DIR/index.tpl" > "index.md"
   fi
+}
 
-  cat "$TEMPLATE_DIR/index.tpl" > "index.md"
+HELP[add]='Add a new zettel to the Zettelkasten.'
+
+x.add() {
+  if [ ! -f ".zettelwarrior" ]; then
+    echo "ERROR: .zettelwarrior not found."
+    return 1
+  fi
+  
+  export UUID=$(x._new_uuid)
+  export TITLE=""
+  export FOOTER=""
+  export BACKLINK=""
+
+  cat "$TEMPLATE_DIR/zettel.tpl" | envsubst > "$UUID.md"
 }
 
 HELP[index]='Open the index of the Zettelkasten.'
