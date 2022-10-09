@@ -10,6 +10,7 @@ set -e
 : "${HELP_BROWSER:=}"
 : "${EXE:="${0##*/}"}"
 : "${ZET_DIR:="$HOME/Sync/zettelkasten"}"
+: "${TEMPLATE_DIR:="$HOME/Sync/projects/cmd-zw/templates"}"
 
 declare -A HELP
 declare -A CONF
@@ -199,10 +200,22 @@ Copyright 2021 Rob Muhlestein <rob@rwx.gg>
 Released under Apache-2.0 License  
 Please mention rwxrob.tv'
 
+HELP[init]='Init a folder as a Zettelkasten.'
+
+x.init () {
+  if [ -f ".zettelwarrior" ]; then
+    echo "ERROR: The zettelkasten is already init.";
+  else
+    touch ".zettelwarrior";
+  fi
+
+  cat "$TEMPLATE_DIR/index.tpl" > "index.md"
+}
+
 HELP[index]='Open the index of the Zettelkasten.'
 
 x.index () {
-  $EDITOR "${ZET_DIR}/index.md";
+  $EDITOR "index.md";
 }
 
 HELP[_new_uuid]='Generate a new uuid using the UTC+0 (Coordinated Universal Time).'
@@ -224,7 +237,7 @@ x.title() {
   # Save as a local variable the uuid of the zettel.
   local uuid=$1
   # Find the title and return it.
-  grep -oPh -m 1 '# \K(.*)' "${ZET_DIR}/$uuid.md"
+  grep -oPh -m 1 '# \K(.*)' "$uuid.md"
 }
 
 HELP[tags]='Return tags of a given Zettel.'
@@ -235,7 +248,7 @@ x.tags() {
   # Declare a local varibale to save the raw tags from the zettel.
   local tag_raw;
   # Find the tags in the zettel and save them.
-  tag_raw=$(grep -oPh -m 1 'tags: \K(.*)' "${ZET_DIR}/$uuid.md");
+  tag_raw=$(grep -oPh -m 1 'tags: \K(.*)' "$uuid.md");
   # Remove # and ## from the tags.
   echo "${tag_raw//#/}"
 }
@@ -250,7 +263,7 @@ x.tags_table () {
 
   local uuid;
 
-  local zettels=$(ls "${ZET_DIR}" | grep '^[0-9]');
+  local zettels=$(ls | grep '^[0-9]');
 
   for zettel in $zettels; do
     uuid=${zettel%.md};
