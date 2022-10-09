@@ -33,6 +33,9 @@ _alternatives() {
   if [[ $CMD = f ]];then
     x.foo "$@"
   fi
+  if [[ -z $CMD ]];then
+    x.help "$@"
+  fi
 }
 
 HELP[main]='
