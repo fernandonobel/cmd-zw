@@ -214,17 +214,43 @@ x.init () {
 HELP[add]='Add a new zettel to the Zettelkasten.'
 
 x.add() {
+
+  local backlink title_passed
+
+  while getopts 'b:t' flag; do
+    case "${flag}" in
+      b) backlink="${OPTARG}" ;;
+      t) title_passed=true;;
+      *) echo "Error: flag not supported."
+         exit 1 ;;
+    esac
+  done
+
   if [ ! -f ".zettelwarrior" ]; then
     echo "ERROR: .zettelwarrior not found."
     return 1
   fi
   
   export UUID=$(x._new_uuid)
-  export TITLE=""
+
+  if [[ "$title_passed" ]]; then
+    read title
+    export TITLE=$title
+  else
+    export TITLE=""
+  fi
+
   export FOOTER=""
-  export BACKLINK=""
+
+  if [[ "$backlink" ]]; then
+    local backlink_uuid=${backlink%.md}
+    local backlink_title=$(x.title "$backlink_uuid")
+    export BACKLINK="[$backlink_title]($backlink_uuid)";
+  fi
 
   cat "$TEMPLATE_DIR/zettel.tpl" | envsubst > "$UUID.md"
+
+  echo "[$TITLE]($UUID)"
 }
 
 HELP[index]='Open the index of the Zettelkasten.'
