@@ -246,6 +246,12 @@ x.add() {
     local backlink_uuid=${backlink%.md}
     local backlink_title=$(x.title "$backlink_uuid")
     export BACKLINK="[$backlink_title]($backlink_uuid)";
+
+    local backlink_tags=$(x.tags "$backlink_uuid")
+    export TAGS=""
+    for tag in $backlink_tags; do
+      TAGS="${TAGS}#${tag} "
+    done
   fi
 
   cat "$TEMPLATE_DIR/zettel.tpl" | envsubst > "$UUID.md"

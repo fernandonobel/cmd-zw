@@ -1,6 +1,6 @@
 ---
 uuid: ${UUID}
-tags:
+tags: ${TAGS}
 backlink: ${BACKLINK}
 ---
 
