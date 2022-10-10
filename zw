@@ -287,6 +287,32 @@ x.title() {
   grep -oPh -m 1 '# \K(.*)' "$uuid.md"
 }
 
+HELP[search]='Search in the zettelkasten.'
+
+x.search() {
+  rg -l . | xargs grep -oP  -m 1 '# \K(.*)' | fzf \
+    --header="enter:open" \
+    --info=inline \
+    --ansi \
+    `# Fullscreen` \
+    --height 100% \
+    `# Use cat for previewing the selection` \
+    --preview 'echo {} | grep -o ".*md" | xargs rg -i -C 10000 -N --color always {q}' \
+    `# Display previow on top, fill 65% of the space and wrap long lines.` \
+    --preview-window=top:65%:wrap \
+    `# Bind up and down arrows for scrolling the preview` \
+    --bind up:preview-up,down:preview-down \
+    `# Do not perform search.` \
+    --phony \
+    `# Call ag whenever the query is changed.` \
+    --bind "change:reload:rg -li {q} | xargs grep -oPH -m 1 '# \K(.*)'" \
+    --bind 'enter:execute-silent: echo {} | grep -o ".*md" | xargs -I % vim %' \
+    --bind "ctrl-o:execute-silent@tmux send-keys -t \{left\} Escape :read Space ! Space echo Space && \
+            tmux send-keys -t \{left\} -l '\$(zw-vimwikilink.py \"{}\")' && \
+            tmux send-keys -t \{left\} Enter@" \
+
+}
+
 HELP[tags]='Return tags of a given Zettel.'
 
 x.tags() {
