@@ -259,6 +259,21 @@ x.add() {
   echo "[$TITLE]($UUID)"
 }
 
+HELP[in]='Create a quick zettel to save an idea in the inbox'
+
+x.in () {
+
+  export UUID=$(x._new_uuid)
+  export TITLE=""
+  export BACKLINK=""
+  export TAGS="#in"
+
+  cat "$TEMPLATE_DIR/zettel.tpl" | envsubst > "$UUID.md"
+
+  $EDITOR "$UUID.md";
+
+}
+
 HELP[index]='Open the index of the Zettelkasten.'
 
 x.index () {
