@@ -274,6 +274,23 @@ x.in () {
 
 }
 
+HELP[inbox]='Show the zettels in the inbox.'
+
+x.inbox() {
+  
+  local selection
+
+  selection=$(rg -l . -e "#in" | xargs grep -oP  -m 1 '# \K(.*)' | fzf \
+    --header="enter:open" \
+    --info=inline \
+    --preview 'echo {} | grep -o ".*md" | xargs cat')
+
+  selection=$(echo $selection | grep -o ".*md")
+
+  $EDITOR "$selection"
+  
+}
+
 HELP[index]='Open the index of the Zettelkasten.'
 
 x.index () {
