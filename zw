@@ -141,54 +141,30 @@ x.in () {
 
 }
 
+HELP[_rg_2_fzf]='Search using rg and format the output for fzf.'
+
+x._rg_2_fzf() {
+  local search_pattern=$1
+  local filenames=$(rg -l "$1")
+  local input_for_fzf=""
+  local uuid
+  local title
+  for filename in $filenames 
+  do
+    uuid=$(basename "$filename" ".md")
+    title=$(x.title "$uuid")
+    input_for_fzf+=$(echo "$title :: $filename\n")
+  done
+
+  echo -e $input_for_fzf
+}
+
 HELP[inbox]='Show the zettels in the inbox.'
 
 x.inbox() {
-  local filenames_inbox=$(rg -l "#in")
+  local search_pattern=$1
 
-  local input_for_fzf=""
-  local title
-  local uuid
-
-  for filename in $filenames_inbox
-  do
-    uuid=$(basename "$filename" ".md")
-    title=$(x.title "$uuid")
-    input_for_fzf+=$(echo "$title :: $filename\n")
-  done
-
-  local selection=$(echo -e "$input_for_fzf" | fzf \
-    --info=inline \
-    --ansi \
-    --height 100% \
-    --preview 'echo {} | grep -oP "\:\: \K(.*)" | xargs rg -i -C 10000 -N --color always {q}' \
-    --preview-window=right:50%:wrap \
-    --bind up:preview-up,down:preview-down)
-
-  local filename=$(echo $selection | grep -oP "\:\: \K(.*)")
-
-  if [ -n "$filename" ]; then
-    $EDITOR $filename
-  fi
-}
-
-HELP[maybe]='Show the zettels in the maybe inbox.'
-
-x.maybe() {
-  local filenames_inbox=$(rg -l "#maybe")
-
-  local input_for_fzf=""
-  local title
-  local uuid
-
-  for filename in $filenames_inbox
-  do
-    uuid=$(basename "$filename" ".md")
-    title=$(x.title "$uuid")
-    input_for_fzf+=$(echo "$title :: $filename\n")
-  done
-
-  local selection=$(echo -e "$input_for_fzf" | fzf \
+  local selection=$(x._rg_2_fzf $search_pattern | fzf \
     --info=inline \
     --ansi \
     --height 100% \
@@ -262,6 +238,7 @@ x.title() {
 HELP[search]='Search in the zettelkasten.'
 
 x.search() {
+
   rg -l . | xargs grep -oP  -m 1 '# \K(.*)' | fzf \
     --header="enter:open" \
     --info=inline \
