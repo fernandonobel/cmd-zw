@@ -7,7 +7,7 @@ set -e
 
 : "${PAGER:=more}"
 : "${EDITOR:=vi}"
-: "${HELP_BROWSER:=chromium-browser}"
+: "${HELP_BROWSER:=}"
 : "${EXE:="${0##*/}"}"
 : "${ZET_DIR:="$HOME/Sync/zettelkasten"}"
 : "${TEMPLATE_DIR:="$HOME/Sync/projects/cmd-zw/templates"}"
@@ -141,42 +141,10 @@ x.in () {
 
 }
 
-HELP[_rg_2_fzf]='Search using rg and format the output for fzf.'
-
-x._rg_2_fzf() {
-  local search_pattern=$1
-  local filenames=$(rg -l "$1")
-  local input_for_fzf=""
-  local uuid
-  local title
-  for filename in $filenames 
-  do
-    uuid=$(basename "$filename" ".md")
-    title=$(x.title "$uuid")
-    input_for_fzf+=$(echo "$title :: $filename\n")
-  done
-
-  echo -e $input_for_fzf
-}
-
 HELP[inbox]='Show the zettels in the inbox.'
 
 x.inbox() {
-  local search_pattern=$1
-
-  local selection=$(x._rg_2_fzf $search_pattern | fzf \
-    --info=inline \
-    --ansi \
-    --height 100% \
-    --preview 'echo {} | grep -oP "\:\: \K(.*)" | xargs rg -i -C 10000 -N --color always {q}' \
-    --preview-window=right:50%:wrap \
-    --bind up:preview-up,down:preview-down)
-
-  local filename=$(echo $selection | grep -oP "\:\: \K(.*)")
-
-  if [ -n "$filename" ]; then
-    $EDITOR $filename
-  fi
+  x.search "#in"
 }
 
 HELP[index]='Open the index of the Zettelkasten.'
@@ -235,31 +203,50 @@ x.title() {
   echo $result
 }
 
+HELP[_rg_2_fzf]='Search using rg and format the output for fzf.'
+
+x._rg_2_fzf() {
+  local search_pattern=$1
+
+  if [ -z "${VAR+xxx}" ]; then
+    search_pattern="."
+  fi
+
+  local filenames=$(rg -l "$1" -g '!diary/')
+  local input_for_fzf=""
+  local uuid
+  local title
+  for filename in $filenames 
+  do
+    uuid=$(basename "$filename" ".md")
+    title=$(x.title "$uuid")
+    input_for_fzf+=$(echo "$title :: $filename\n")
+  done
+
+  echo -e $input_for_fzf
+}
+
 HELP[search]='Search in the zettelkasten.'
 
 x.search() {
+  local search_pattern=$1
 
-  rg -l . | xargs grep -oP  -m 1 '# \K(.*)' | fzf \
-    --header="enter:open" \
+  local selection=$(x._rg_2_fzf $search_pattern | fzf \
     --info=inline \
     --ansi \
-    `# Fullscreen` \
     --height 100% \
-    `# Use cat for previewing the selection` \
-    --preview 'echo {} | grep -o ".*md" | xargs rg -i -C 10000 -N --color always {q}' \
-    `# Display previow on top, fill 65% of the space and wrap long lines.` \
+    --preview 'echo {} | grep -oP "\:\: \K(.*)" | xargs rg -i -C 10000 -N --color always {q}' \
     --preview-window=right:50%:wrap \
-    `# Bind up and down arrows for scrolling the preview` \
     --bind up:preview-up,down:preview-down \
-    `# Do not perform search.` \
     --phony \
-    `# Call ag whenever the query is changed.` \
-    --bind "change:reload:rg -li {q} | xargs grep -oPH -m 1 '# \K(.*)'" \
-    --bind 'enter:execute-silent: echo {} | grep -o ".*md" | xargs -I % vim %' \
-    --bind "ctrl-o:execute-silent@tmux send-keys -t \{left\} Escape :read Space ! Space echo Space && \
-            tmux send-keys -t \{left\} -l '\$(zw-vimwikilink.py \"{}\")' && \
-            tmux send-keys -t \{left\} Enter@" \
+    --bind 'change:reload:zw _rg_2_fzf {q}' \
+  )
 
+  local filename=$(echo $selection | grep -oP "\:\: \K(.*)")
+
+  if [ -n "$filename" ]; then
+    $EDITOR $filename
+  fi
 }
 
 HELP[tags]='Return tags of a given Zettel.'
